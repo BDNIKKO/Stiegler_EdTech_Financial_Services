@@ -4,6 +4,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile  # Specify the path to the Dockerfile
     container_name: flask-backend
     ports:
       - "5000:5000"
