@@ -1,25 +1,21 @@
-FROM python:3.10-slim
+# Use official Python slim image for smaller footprint
+FROM python:3.9-slim
 
-# Update and install build dependencies for numpy, scipy, and psycopg2
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    gfortran \
-    libblas-dev \
-    liblapack-dev \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy and install requirements
+# Copy the requirements file first to leverage Docker cache
 COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
+# Install required dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Copy the rest of the backend code and models into the container
 COPY . /app
 
+# Expose Flask port (5000) for communication
 EXPOSE 5000
 
+# Run the Flask application
 CMD ["python", "app.py"]

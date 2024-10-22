@@ -1,43 +1,49 @@
-version: '3'
+version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile  # Specify the path to the Dockerfile
-    container_name: flask-backend
+    build: ./backend
     ports:
       - "5000:5000"
     volumes:
       - ./backend:/app
-    environment:
-      - FLASK_ENV=development
-      - DATABASE_URL=postgresql://user:password@db:5432/dbname
     depends_on:
-      - db
-
-  frontend:
-    build:
-      context: ./frontend
-    container_name: react-frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-    stdin_open: true
-    tty: true
-
-  db:
-    image: postgres:13
-    container_name: postgres-db
+      - postgres
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: loan_db
+    networks:
+      - loan-network
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: loan_db
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loan-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - loan-network
 
 volumes:
-  postgres_data:
+  pgdata:
+
+networks:
+  loan-network:
+    driver: bridge
