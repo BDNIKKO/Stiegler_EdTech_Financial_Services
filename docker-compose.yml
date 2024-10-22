@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: flask-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://user:password@db:5432/dbname
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: react-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    stdin_open: true
+    tty: true
+
+  db:
+    image: postgres:13
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
