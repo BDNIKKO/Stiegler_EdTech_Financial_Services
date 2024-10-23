@@ -4,26 +4,41 @@ from flask_cors import CORS
 import pickle
 import numpy as np
 import os
+import time
+from sqlalchemy.exc import OperationalError
 
-# Initialize Flask app and enable CORS to allow frontend communication
+# Initialize Flask app and enable CORS
 app = Flask(__name__)
 CORS(app)
 
-# PostgreSQL configuration from environment variables
+# PostgreSQL configuration
 POSTGRES_USER = os.getenv('POSTGRES_USER', 'admin')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'admin')
-POSTGRES_DB = os.getenv('POSTGRES_DB', 'loan_db')
+POSTGRES_DB = os.getenv('POSTGRES_DB', 'admin')  # Ensure consistency
 
-# Database URI for PostgreSQL (running in Docker container)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@postgres:5432/{POSTGRES_DB}"
+    "postgresql://admin:admin@postgres:5432/admin"
 )
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+print(f"Connecting to: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Initialize database connection
 db = SQLAlchemy(app)
 
-# Define Loan Application model for storing results in PostgreSQL
+# Retry mechanism to ensure database is ready
+def wait_for_db():
+    while True:
+        try:
+            db.session.execute('SELECT 1')
+            print("Database is ready!")
+            break
+        except OperationalError:
+            print("Database not ready, retrying in 5 seconds...")
+            time.sleep(5)
+
+# Loan Application model
 class LoanApplication(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     applicant_income = db.Column(db.Float, nullable=False)
@@ -34,10 +49,10 @@ class LoanApplication(db.Model):
     employment_length = db.Column(db.Integer, nullable=False)
     loan_to_income = db.Column(db.Float, nullable=False)
     prediction = db.Column(db.String(10), nullable=False)
-    probability = db.Column(db.Float, nullable=False)  # Store probability score
+    probability = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
 
-# Load the logistic regression model and scaler from Pickle files
+# Load the logistic regression model and scaler from Pickle
 with open('models/logistic_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
@@ -46,33 +61,31 @@ with open('models/scaler.pkl', 'rb') as f:
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    """Handle loan prediction requests from the frontend."""
+    """Handle loan predictions and save to the database."""
     try:
-        # Get JSON data from the frontend
+        # Get input data from the request
         data = request.json
 
-        # Extract and format the input features
+        # Prepare feature set for the model
         features = np.array([[
-            data['income'], 
-            data['loan_amount'], 
+            data['income'],
+            data['loan_amount'],
             data['credit_history'],
             data['debt_to_income'],
-            data['loan_term'], 
+            data['loan_term'],
             data['employment_length'],
             data['loan_to_income']
         ]])
 
-        # Scale the input features using the pre-fitted scaler
+        # Scale the features
         scaled_features = scaler.transform(features)
 
-        # Predict loan approval and calculate probability
+        # Make prediction
         prediction = model.predict(scaled_features)[0]
-        probability = model.predict_proba(scaled_features)[0][1]  # Probability of approval
-
-        # Convert prediction to human-readable result
+        probability = model.predict_proba(scaled_features)[0][1]
         result = 'Approved' if prediction == 1 else 'Denied'
 
-        # Store the loan application result in PostgreSQL
+        # Save result to database
         new_application = LoanApplication(
             applicant_income=data['income'],
             loan_amount=data['loan_amount'],
@@ -87,16 +100,13 @@ def predict():
         db.session.add(new_application)
         db.session.commit()
 
-        # Return the prediction and probability to the frontend
         return jsonify({'prediction': result, 'probability': probability})
 
     except Exception as e:
-        # Handle errors and return a meaningful message to the frontend
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    # Ensure the database is created when the app starts
     with app.app_context():
-        db.create_all()
-    # Run the Flask app
+        wait_for_db()  # Ensure database is ready before creating tables
+        db.create_all()  # Create tables if they don't exist
     app.run(host='0.0.0.0', port=5000, debug=True)

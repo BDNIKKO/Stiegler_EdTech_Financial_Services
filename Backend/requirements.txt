@@ -5,5 +5,5 @@ numpy==1.26.0
 psycopg2-binary==2.9.10
 scikit-learn==1.3.2
 werkzeug==2.2.3
-scipy==1.11.4  # Ensures compatibility with numpy
-SQLAlchemy==1.4.49
+scipy==1.11.4
+SQLAlchemy<2.0  # Prevent SQLAlchemy 2.0 breaking changes
