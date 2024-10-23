@@ -52,58 +52,56 @@ class LoanApplication(db.Model):
     probability = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
 
-# Load the logistic regression model and scaler from Pickle
-with open('models/logistic_model.pkl', 'rb') as f:
-    model = pickle.load(f)
-
-with open('models/scaler.pkl', 'rb') as f:
-    scaler = pickle.load(f)
+# Load the trained logistic regression model and scaler
+model = pickle.load(open('models/logistic_model.pkl', 'rb'))
+scaler = pickle.load(open('models/scaler.pkl', 'rb'))
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    """Handle loan predictions and save to the database."""
-    try:
-        # Get input data from the request
-        data = request.json
+    data = request.get_json()
 
-        # Prepare feature set for the model
-        features = np.array([[
-            data['income'],
-            data['loan_amount'],
-            data['credit_history'],
-            data['debt_to_income'],
-            data['loan_term'],
-            data['employment_length'],
-            data['loan_to_income']
-        ]])
+    # Extract the form data
+    income = float(data['income'])
+    loan_amount = float(data['loan_amount'])
+    loan_term_years = float(data['loan_term'])  # Input in years
+    employment_length = float(data['employment_length'])
 
-        # Scale the features
-        scaled_features = scaler.transform(features)
+    # Convert loan term from years to months
+    loan_term_months = loan_term_years * 12
 
-        # Make prediction
-        prediction = model.predict(scaled_features)[0]
-        probability = model.predict_proba(scaled_features)[0][1]
-        result = 'Approved' if prediction == 1 else 'Denied'
+    # Automatically calculate Debt-to-Income ratio (DTI)
+    debt_to_income = (loan_amount / income) * 100
 
-        # Save result to database
-        new_application = LoanApplication(
-            applicant_income=data['income'],
-            loan_amount=data['loan_amount'],
-            credit_history=data['credit_history'],
-            debt_to_income=data['debt_to_income'],
-            loan_term=data['loan_term'],
-            employment_length=data['employment_length'],
-            loan_to_income=data['loan_to_income'],
-            prediction=result,
-            probability=probability
-        )
-        db.session.add(new_application)
-        db.session.commit()
+    # Automatically calculate Loan-to-Income ratio (LTI)
+    loan_to_income = (loan_amount / income) * 100
 
-        return jsonify({'prediction': result, 'probability': probability})
+    # Automatically calculate credit history based on employment length
+    if employment_length > 5:
+        credit_history = 1  # Good credit
+    else:
+        credit_history = 0  # Bad credit
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    # Prepare the feature array for prediction
+    input_features = np.array([[income, loan_amount, loan_term_months, employment_length, debt_to_income, loan_to_income, credit_history]])
+
+    # Log input features for debugging
+    print("Input features used for prediction:", input_features)
+
+    # Scale the input
+    scaled_input = scaler.transform(input_features)
+
+    # Get the prediction from the model
+    prediction = model.predict(scaled_input)[0]
+
+    # Log the prediction result for debugging
+    print("Prediction result:", prediction)
+
+    # Return the prediction result as 'Approved' or 'Denied'
+    result = 'Approved' if prediction == 1 else 'Denied'
+    return jsonify({'prediction': result})
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
 
 if __name__ == '__main__':
     with app.app_context():
