@@ -1,0 +1,35 @@
+.hero-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    text-align: center;
+  }
+  
+  .hero-content {
+    max-width: 600px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+  }
+  
+  .hero-buttons {
+    margin-top: 20px;
+  }
+  
+  .hero-button {
+    text-decoration: none;
+    color: white;
+    background: #2575fc;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 10px;
+    transition: background 0.3s ease;
+  }
+  
+  .hero-button:hover {
+    background: #6a11cb;
+  }
+  

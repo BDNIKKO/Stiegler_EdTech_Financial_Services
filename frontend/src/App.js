@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import HeroPage from './components/HeroPage'; // Assuming HeroPage.js is in components folder
+import LoginForm from './components/LoginForm'; // Assuming LoginForm.js is created in components folder
+import RegisterForm from './components/RegisterForm'; // Assuming RegisterForm.js is created in components folder
 
-function App() {
+function LoanApplication() {
   // State to hold the form data
   const [formData, setFormData] = useState({
     income: '',
@@ -44,7 +48,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div>
       <h1>Personal Loan Application</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -98,6 +102,21 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<HeroPage />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/loan-application" element={<LoanApplication />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
