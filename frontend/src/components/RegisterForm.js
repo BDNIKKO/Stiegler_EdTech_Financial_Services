@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ function RegisterForm() {
 
   const [error, setError] = useState(null); // State to handle errors
   const [successMessage, setSuccessMessage] = useState(null); // State to handle success message
+  const navigate = useNavigate(); // Initialize the navigate hook
 
   const handleChange = (e) => {
     setFormData({
@@ -37,8 +39,11 @@ function RegisterForm() {
       const responseData = await response.json(); // Parse the response JSON
 
       if (response.ok) {
-        setSuccessMessage(responseData.message || 'Registration successful! You can now login.');
+        setSuccessMessage(responseData.message || 'Registration successful! Redirecting to login...');
         setError(null);
+        setTimeout(() => {
+          navigate('/login'); // Redirect to login page after 2 seconds
+        }, 2000);
       } else {
         setError(responseData.message || 'Registration failed. Please try again.');
       }

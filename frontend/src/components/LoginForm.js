@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
 function LoginForm() {
@@ -36,8 +36,8 @@ function LoginForm() {
         // Save JWT token in local storage
         localStorage.setItem('token', data.token);
         
-        // Redirect to the loan application page
-        navigate('/loan-application');
+        // Redirect to the dashboard page after successful login
+        navigate('/dashboard');
       } else {
         setError('Invalid username or password');
       }
