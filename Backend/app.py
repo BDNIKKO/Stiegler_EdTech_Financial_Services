@@ -1,9 +1,9 @@
-import pickle 
+# Import necessary modules
+import pickle
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import pandas as pd
-import numpy as np
+import pandas as np
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -30,6 +30,16 @@ app.config['SECRET_KEY'] = '8e8255b84da012f7e0fe37404dde07a0a2748ca7e9ee5c7f10d9
 # Initialize the database connection
 db = SQLAlchemy(app)
 
+# Loan model to store loan application details and decision
+class Loan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    income = db.Column(db.Float, nullable=False)
+    loan_amount = db.Column(db.Float, nullable=False)
+    loan_term = db.Column(db.Integer, nullable=False)
+    employment_length = db.Column(db.Float, nullable=False)
+    decision = db.Column(db.String(10), nullable=False)  # 'Approved' or 'Denied'
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
 # User model definition
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,7 +61,6 @@ def token_required(f):
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
 
-        # Remove 'Bearer ' prefix if present
         if token.startswith("Bearer "):
             token = token.split("Bearer ")[1]
 
@@ -112,7 +121,7 @@ def login():
     logging.debug(f"Issued Token: {token}")
     return jsonify({'token': token})
 
-# Prediction endpoint
+# Prediction endpoint with loan logging
 @app.route('/api/predict', methods=['POST'])
 @token_required
 def predict():
@@ -122,36 +131,41 @@ def predict():
     if None in features:
         return jsonify({'message': 'Missing required input values!'}), 400
 
-    # Validate that all inputs are numeric
     try:
         features = list(map(float, features))
     except ValueError:
         return jsonify({'message': 'All input values must be numbers!'}), 400
 
-    # Calculate additional features
     income, loan_amount, loan_term, employment_length = features
     loan_term_months = loan_term * 12
     debt_to_income = (loan_amount / income) * 100
     loan_to_income = (loan_amount / income) * 100
     credit_history = 1 if employment_length > 5 else 0
 
-    # Update features to include calculated fields
     features = [income, loan_amount, loan_term_months, employment_length, debt_to_income, loan_to_income, credit_history]
-
-    # Scale features
     features = np.array(features).reshape(1, -1)
     features_scaled = scaler.transform(features)
 
-    # Get prediction from model
     prediction = model.predict(features_scaled)
 
-    # Add additional constraints to make predictions more realistic
     if debt_to_income > 40 or income < 20000:
         result = 'Denied'
     else:
         result = 'Approved' if prediction[0] == 1 else 'Denied'
 
+    # Log loan details in the database
+    loan_entry = Loan(
+        income=income,
+        loan_amount=loan_amount,
+        loan_term=loan_term,
+        employment_length=employment_length,
+        decision=result
+    )
+    db.session.add(loan_entry)
+    db.session.commit()
+
     return jsonify({'prediction': result})
 
 if __name__ == '__main__':
+    db.create_all()  # Ensure tables are created
     app.run(debug=True, host='0.0.0.0', port=5000)
