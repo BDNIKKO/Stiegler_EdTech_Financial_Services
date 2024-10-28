@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -13,9 +13,8 @@ function Dashboard() {
     <div>
       <nav>
         <ul>
-          <li><Link to="/loan-application">Personal Loan Application</Link></li>
-          <li><Link to="/about-us">About Us</Link></li>
-          <li><Link to="/support">Support</Link></li>
+          <li><a href="/loan-application">Personal Loan Application</a></li>
+          <li><a href="/support">Support</a></li>
           <li><button onClick={handleLogout}>Log Out</button></li>
         </ul>
       </nav>
@@ -23,6 +22,8 @@ function Dashboard() {
         <h1>Welcome to Your Dashboard</h1>
         <img src="/professional_photo.jpg" alt="Professional" />
         <p>This is your dashboard. From here, you can navigate through the application.</p>
+        <h2>About Us</h2>
+        <p>We are a financial service provider focused on making loan applications simple and accessible for everyone. Our goal is to use advanced technology to provide an easy and seamless loan application process for users. We pride ourselves on customer satisfaction and support throughout the process, ensuring you have the best experience possible.</p>
       </div>
     </div>
   );
