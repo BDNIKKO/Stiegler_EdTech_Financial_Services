@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Support Page</title>
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Support Page</h1>
+
+    <!-- Ticket creation form -->
+    <div id="userSupportForm">
+        <h2>Create a Support Ticket</h2>
+        <form id="ticketForm">
+            <label for="subject">Subject:</label><br>
+            <input type="text" id="subject" name="subject" required><br><br>
+            
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+            
+            <button type="submit">Submit Ticket</button>
+        </form>
+    </div>
+
+    <!-- IT support tab (hidden by default, shown for IT support users) -->
+    <div id="itSupportTab" class="hidden">
+        <h2>Support Tickets</h2>
+        <ul id="ticketList"></ul>
+    </div>
+    <script src="support.js"></script>
+</body>
+</html>
