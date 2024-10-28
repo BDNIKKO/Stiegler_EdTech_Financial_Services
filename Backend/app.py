@@ -135,18 +135,22 @@ def predict():
     loan_to_income = (loan_amount / income) * 100
     credit_history = 1 if employment_length > 5 else 0
 
-    # Business logic checks to add realistic decision-making
-    if debt_to_income > 40 or loan_to_income > 50:
-        return jsonify({'prediction': 'Denied', 'reason': 'High debt-to-income or loan-to-income ratio.'})
-
     # Update features to include calculated fields
     features = [income, loan_amount, loan_term_months, employment_length, debt_to_income, loan_to_income, credit_history]
 
+    # Scale features
     features = np.array(features).reshape(1, -1)
     features_scaled = scaler.transform(features)
+
+    # Get prediction from model
     prediction = model.predict(features_scaled)
 
-    result = 'Approved' if prediction[0] == 1 else 'Denied'
+    # Add additional constraints to make predictions more realistic
+    if debt_to_income > 40 or income < 20000:
+        result = 'Denied'
+    else:
+        result = 'Approved' if prediction[0] == 1 else 'Denied'
+
     return jsonify({'prediction': result})
 
 if __name__ == '__main__':
