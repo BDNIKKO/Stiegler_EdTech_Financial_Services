@@ -1,4 +1,4 @@
-version: '3.9'  # Update to latest stable version
+version: "3.9" # Update to latest stable version
 
 services:
   backend:
@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: admin
-      FLASK_ENV: development  # Enables Flask debug mode
-      SQLALCHEMY_WARN_20: 1  # Show SQLAlchemy deprecation warnings
+      FLASK_ENV: development # Enables Flask debug mode
+      SQLALCHEMY_WARN_20: 1 # Show SQLAlchemy deprecation warnings
       SQLALCHEMY_SILENCE_UBER_WARNING: 1
     depends_on:
       postgres:
@@ -30,12 +30,27 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d/  # Ensure init SQL runs
+      - ./db-init:/docker-entrypoint-initdb.d/ # Ensure init SQL runs
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - loan-network
+
+  # pgAdmin Service
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - loan-network
 
