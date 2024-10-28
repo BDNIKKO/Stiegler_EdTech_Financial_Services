@@ -3,8 +3,9 @@ import pickle
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-import pandas as np
+import pandas as pd
 import os
+import numpy as np
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
@@ -39,12 +40,22 @@ class Loan(db.Model):
     employment_length = db.Column(db.Float, nullable=False)
     decision = db.Column(db.String(10), nullable=False)  # 'Approved' or 'Denied'
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(100))
 
 # User model definition
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    address = db.Column(db.Text)
 
 # Load the trained logistic regression model and scaler
 with open('models/logistic_model.pkl', 'rb') as f:
@@ -83,25 +94,31 @@ def token_required(f):
 
     return decorated
 
-
-
-
 # User registration route
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    phone = data.get('phone')
+    email = data.get('email')
+    address = data.get('address')
 
     if not username or not password:
         return jsonify({'message': 'Username and password are required!'}), 400
 
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
-        return jsonify({'message': 'Username already exists. Please choose a different one.'}), 400
+        return jsonify({'message': 'Username already exists.'}), 400
 
     hashed_password = generate_password_hash(password, method='sha256')
-    new_user = User(username=username, password=hashed_password)
+    new_user = User(
+        username=username, password=hashed_password, 
+        first_name=first_name, last_name=last_name, 
+        phone=phone, email=email, address=address
+    )
 
     try:
         db.session.add(new_user)
@@ -109,7 +126,7 @@ def register():
         return jsonify({'message': 'User registered successfully!'}), 201
     except Exception as e:
         logging.error(f"Error occurred while registering user: {e}")
-        return jsonify({'message': 'Registration failed due to server error. Please try again.'}), 500
+        return jsonify({'message': 'Registration failed due to server error.'}), 500
 
 # User login route
 @app.route('/api/login', methods=['POST'])
@@ -146,10 +163,35 @@ def login():
     logging.debug(f"Issued Token: {token}")
     return jsonify({'token': token})
 
+@app.route('/api/predict', methods=['POST'])  # Add this decorator
 @token_required
 def predict():
+    logging.info("Predict route accessed.")
+
+    # Extract the username from the JWT token
+    token = request.headers.get('Authorization')
+    if token and token.startswith("Bearer "):
+        token = token.split("Bearer ")[1]
+    try:
+        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        username = decoded_token.get('user')
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
+        logging.error(f"Token error: {e}")
+        return jsonify({'message': 'Invalid or expired token!'}), 401
+
+    # Fetch the user from the database
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'message': 'User not found!'}), 404
+
+    # Extract features from request
     data = request.get_json()
-    features = [data.get('income'), data.get('loan_amount'), data.get('loan_term'), data.get('employment_length')]
+    features = [
+        data.get('income'),
+        data.get('loan_amount'),
+        data.get('loan_term'),
+        data.get('employment_length')
+    ]
 
     if None in features:
         return jsonify({'message': 'Missing required input values!'}), 400
@@ -159,36 +201,47 @@ def predict():
     except ValueError:
         return jsonify({'message': 'All input values must be numbers!'}), 400
 
+    # MLM Logic: Calculate additional features
     income, loan_amount, loan_term, employment_length = features
     loan_term_months = loan_term * 12
     debt_to_income = (loan_amount / income) * 100
     loan_to_income = (loan_amount / income) * 100
     credit_history = 1 if employment_length > 5 else 0
 
-    features = [income, loan_amount, loan_term_months, employment_length, debt_to_income, loan_to_income, credit_history]
+    # Prepare feature set for model prediction
+    features = [
+        income, loan_amount, loan_term_months,
+        employment_length, debt_to_income,
+        loan_to_income, credit_history
+    ]
     features = np.array(features).reshape(1, -1)
-    features_scaled = scaler.transform(features)
 
+    with np.errstate(all='ignore'):
+        features_scaled = scaler.transform(features)
+
+    # Get prediction from the model
     prediction = model.predict(features_scaled)
 
+    # Apply business rules for final decision
     if debt_to_income > 40 or income < 20000:
         result = 'Denied'
     else:
         result = 'Approved' if prediction[0] == 1 else 'Denied'
 
-    # Log loan details in the database
+    # Log loan details along with user information
     loan_entry = Loan(
         income=income,
         loan_amount=loan_amount,
         loan_term=loan_term,
         employment_length=employment_length,
-        decision=result
+        decision=result,
+        user_id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone,
+        email=user.email
     )
     db.session.add(loan_entry)
     db.session.commit()
 
     return jsonify({'prediction': result})
-
-if __name__ == '__main__':
-    db.create_all()  # Ensure tables are created
-    app.run(debug=True, host='0.0.0.0', port=5000)

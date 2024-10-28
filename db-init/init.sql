@@ -13,7 +13,12 @@ END $$;
 CREATE TABLE IF NOT EXISTS "user" (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(100) NOT NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT
 );
 
 -- Loan table definition
@@ -24,8 +29,14 @@ CREATE TABLE IF NOT EXISTS loan (
     loan_term INTEGER NOT NULL,
     employment_length FLOAT NOT NULL,
     decision VARCHAR(10) NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER REFERENCES "user"(id) ON DELETE SET NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    phone VARCHAR(20)
 );
+
 
 -- Insert a pre-authenticated admin user (hashed password: 'admin123')
 INSERT INTO "user" (username, password)

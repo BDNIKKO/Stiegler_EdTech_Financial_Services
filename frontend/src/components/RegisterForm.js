@@ -5,7 +5,12 @@ function RegisterForm() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    first_name: '',
+    last_name: '',
+    phone: '',
+    email: '',
+    address: ''
   });
 
   const [error, setError] = useState(null); // State to handle errors
@@ -33,7 +38,7 @@ function RegisterForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: formData.username, password: formData.password }),
+        body: JSON.stringify(formData), // Send the entire formData object
       });
 
       const responseData = await response.json(); // Parse the response JSON
@@ -71,6 +76,26 @@ function RegisterForm() {
           <label>Confirm Password:</label>
           <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
         </div>
+        <div>
+          <label>First Name:</label>
+          <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Last Name:</label>
+          <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Phone:</label>
+          <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
+        </div>
+        <div>
+          <label>Address:</label>
+          <textarea name="address" value={formData.address} onChange={handleChange} required></textarea>
+        </div>
         <button type="submit">Register</button>
       </form>
     </div>
@@ -78,3 +103,4 @@ function RegisterForm() {
 }
 
 export default RegisterForm;
+
