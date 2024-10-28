@@ -34,11 +34,13 @@ function RegisterForm() {
         body: JSON.stringify({ username: formData.username, password: formData.password }),
       });
 
+      const responseData = await response.json(); // Parse the response JSON
+
       if (response.ok) {
-        setSuccessMessage('Registration successful! You can now login.');
+        setSuccessMessage(responseData.message || 'Registration successful! You can now login.');
         setError(null);
       } else {
-        setError('Registration failed. Please try again.');
+        setError(responseData.message || 'Registration failed. Please try again.');
       }
     } catch (error) {
       console.error('Error:', error);

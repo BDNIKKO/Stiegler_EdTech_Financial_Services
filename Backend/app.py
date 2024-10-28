@@ -30,6 +30,12 @@ app.config['SECRET_KEY'] = '8e8255b84da012f7e0fe37404dde07a0a2748ca7e9ee5c7f10d9
 # Initialize the database connection
 db = SQLAlchemy(app)
 
+# User model definition
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+
 # Load the trained logistic regression model and scaler
 with open('models/logistic_model.pkl', 'rb') as f:
     model = pickle.load(f)
@@ -73,10 +79,20 @@ def register():
     if not username or not password:
         return jsonify({'message': 'Username and password are required!'}), 400
 
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({'message': 'Username already exists. Please choose a different one.'}), 400
+
     hashed_password = generate_password_hash(password, method='sha256')
-    # Code to add user to database (not shown here)
-    
-    return jsonify({'message': 'User registered successfully!'}), 201
+    new_user = User(username=username, password=hashed_password)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'User registered successfully!'}), 201
+    except Exception as e:
+        logging.error(f"Error occurred while registering user: {e}")
+        return jsonify({'message': 'Registration failed due to server error. Please try again.'}), 500
 
 # User login route
 @app.route('/api/login', methods=['POST'])
@@ -88,15 +104,13 @@ def login():
     if not username or not password:
         return jsonify({'message': 'Username and password are required!'}), 400
 
-    # Code to verify user from the database (not shown here)
-    
-    # Assuming user is verified
-    if True:  # Replace with actual check
-        token = jwt.encode({'user': username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=3)}, app.config['SECRET_KEY'], algorithm="HS256")
-        logging.debug(f"Issued Token: {token}")
-        return jsonify({'token': token})
-    else:
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password, password):
         return jsonify({'message': 'Invalid credentials!'}), 401
+
+    token = jwt.encode({'user': username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=3)}, app.config['SECRET_KEY'], algorithm="HS256")
+    logging.debug(f"Issued Token: {token}")
+    return jsonify({'token': token})
 
 # Prediction endpoint
 @app.route('/api/predict', methods=['POST'])
