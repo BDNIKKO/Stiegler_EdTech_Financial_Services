@@ -56,45 +56,33 @@ with open('models/scaler.pkl', 'rb') as f:
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Get token from headers
+        # Check if the request is made by the admin user (bypass security)
+        auth_username = request.json.get('username', None)
+        if auth_username == 'admin':
+            logging.info("Bypassing token authentication for admin user.")
+            return f(*args, **kwargs)
+
+        # Proceed with normal token authentication for other users
         token = request.headers.get('Authorization')
 
-        # If no token is provided, check if the admin bypass is applicable
         if not token:
-            logging.debug("No token provided, checking if admin user is bypassed.")
-
-            # Bypass token validation if admin is accessing the route
-            auth_username = request.json.get('username', None)
-            if auth_username == 'admin':
-                logging.debug("Bypassing authentication for admin user.")
-                return f(*args, **kwargs)
-
-            # If it's not the admin, deny access
             return jsonify({'message': 'Token is missing!'}), 401
 
-        # If a token exists, extract it from "Bearer <token>"
         if token.startswith("Bearer "):
             token = token.split("Bearer ")[1]
 
         try:
-            # Decode the JWT token to get the username
+            # Decode the JWT token to validate the user
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            username = data.get('user')
-
-            # If the decoded user is admin, bypass further checks
-            if username == 'admin':
-                logging.debug("Admin user detected, bypassing further token validation.")
-                return f(*args, **kwargs)
-
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'Token has expired!'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'message': 'Token is invalid!'}), 401
 
-        # Proceed to the route if everything is valid
         return f(*args, **kwargs)
 
     return decorated
+
 
 
 
@@ -140,7 +128,7 @@ def login():
         return jsonify({'message': 'Invalid credentials!'}), 401
 
     try:
-        # Bypass password verification for admin user
+        # Bypass password check for admin user
         if username == 'admin':
             logging.info("Bypassing password check for admin user.")
         elif not check_password_hash(user.password, password):
@@ -150,7 +138,7 @@ def login():
         logging.exception(f"Error during password verification: {e}")
         return jsonify({'message': 'Internal server error.'}), 500
 
-    # Issue JWT token on successful login
+    # Issue JWT token for both admin and regular users
     token = jwt.encode(
         {'user': username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=3)},
         app.config['SECRET_KEY'], algorithm="HS256"
