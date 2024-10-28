@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-route
 import HeroPage from './components/HeroPage';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import Dashboard from './components/Dashboard';
+import AboutUs from './components/AboutUs';
+import Support from './components/Support';
+import NavBar from './components/NavBar';
 
 function LoanApplication() {
   const [formData, setFormData] = useState({
@@ -145,11 +149,15 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <NavBar />
         <Routes>
           <Route path="/" element={<HeroPage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/loan-application" element={<LoanApplication />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/support" element={<Support />} />
         </Routes>
       </div>
     </Router>
