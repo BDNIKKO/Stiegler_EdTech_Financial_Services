@@ -1,4 +1,4 @@
-import pickle
+import pickle 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -134,6 +134,10 @@ def predict():
     debt_to_income = (loan_amount / income) * 100
     loan_to_income = (loan_amount / income) * 100
     credit_history = 1 if employment_length > 5 else 0
+
+    # Business logic checks to add realistic decision-making
+    if debt_to_income > 40 or loan_to_income > 50:
+        return jsonify({'prediction': 'Denied', 'reason': 'High debt-to-income or loan-to-income ratio.'})
 
     # Update features to include calculated fields
     features = [income, loan_amount, loan_term_months, employment_length, debt_to_income, loan_to_income, credit_history]
