@@ -7,6 +7,9 @@ function RegisterForm() {
     confirmPassword: ''
   });
 
+  const [error, setError] = useState(null); // State to handle errors
+  const [successMessage, setSuccessMessage] = useState(null); // State to handle success message
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -14,15 +17,40 @@ function RegisterForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder logic for registration
-    console.log('Registration form submitted:', formData);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: formData.username, password: formData.password }),
+      });
+
+      if (response.ok) {
+        setSuccessMessage('Registration successful! You can now login.');
+        setError(null);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Something went wrong. Please try again.');
+    }
   };
 
   return (
     <div className="register-container">
       <h2>Register</h2>
+      {error && <p className="error-message">{error}</p>}
+      {successMessage && <p className="success-message">{successMessage}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
-import HeroPage from './components/HeroPage'; // Assuming HeroPage.js is in components folder
-import LoginForm from './components/LoginForm'; // Assuming LoginForm.js is created in components folder
-import RegisterForm from './components/RegisterForm'; // Assuming RegisterForm.js is created in components folder
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import HeroPage from './components/HeroPage';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
 
 function LoanApplication() {
-  // State to hold the form data
   const [formData, setFormData] = useState({
     income: '',
     loan_amount: '',
@@ -13,10 +12,17 @@ function LoanApplication() {
     employment_length: ''
   });
 
-  // State to hold the prediction result from the backend
   const [prediction, setPrediction] = useState(null);
+  const navigate = useNavigate();
 
-  // Handle form data changes
+  useEffect(() => {
+    // Check if token is present; if not, redirect to login
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -24,26 +30,56 @@ function LoanApplication() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Log the form data to the console
+
     console.log("Form data being submitted: ", formData);
 
     try {
+      const token = localStorage.getItem('token'); // Get JWT token from local storage
+
+      if (!token) {
+        setPrediction('Unauthorized. Please log in again.');
+        navigate('/login'); // Redirect to login if token is missing
+        return;
+      }
+
+      // Convert input values to numbers before submitting
+      const numericFormData = {
+        income: parseFloat(formData.income),
+        loan_amount: parseFloat(formData.loan_amount),
+        loan_term: parseFloat(formData.loan_term),
+        employment_length: parseFloat(formData.employment_length)
+      };
+
+      if (Object.values(numericFormData).some(isNaN)) {
+        setPrediction('Error: All input values must be valid numbers!');
+        return;
+      }
+
       const response = await fetch('http://localhost:5000/api/predict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Pass token in Authorization header
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(numericFormData),
       });
 
-      const data = await response.json();
-      setPrediction(data.prediction); // Update the prediction state with the result
+      if (response.status === 401) {
+        setPrediction('Unauthorized. Please log in again.');
+        localStorage.removeItem('token'); // Remove invalid token
+        navigate('/login'); // Redirect to login
+      } else if (response.ok) {
+        const data = await response.json();
+        setPrediction(data.prediction); // Update the prediction state with the result
+      } else {
+        const errorData = await response.json();
+        setPrediction(`Error: ${errorData.message || 'An error occurred while processing your request.'}`);
+      }
     } catch (error) {
       console.error('Error:', error);
+      setPrediction('An error occurred while processing your request.');
     }
   };
 
@@ -98,7 +134,7 @@ function LoanApplication() {
       {prediction !== null && (
         <div>
           <h2>Prediction Result</h2>
-          <p>{prediction === 'Approved' ? 'Loan Approved' : 'Loan Denied'}</p>
+          <p>{prediction}</p>
         </div>
       )}
     </div>

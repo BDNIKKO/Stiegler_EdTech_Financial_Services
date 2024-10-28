@@ -1,11 +1,11 @@
 # Use official Python slim image for smaller footprint
 FROM python:3.9-slim
 
-# Set the working directory inside the container
+# Set working directory in the container
 WORKDIR /app
 
-# Copy the requirements file first to leverage Docker cache
-COPY requirements.txt /app/requirements.txt
+# Copy requirements.txt to the working directory
+COPY requirements.txt /app
 
 # Install required dependencies
 RUN pip install --upgrade pip && \
@@ -18,4 +18,4 @@ COPY . /app
 EXPOSE 5000
 
 # Run the Flask application
-CMD ["python", "app.py"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]

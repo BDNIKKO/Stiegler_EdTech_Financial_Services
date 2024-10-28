@@ -8,3 +8,4 @@ werkzeug==2.2.3
 scipy==1.11.4
 SQLAlchemy<2.0
 pandas==1.5.3
+PyJWT==2.6.0

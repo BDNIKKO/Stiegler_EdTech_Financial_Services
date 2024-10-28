@@ -8,6 +8,7 @@ function LoginForm() {
   });
 
   const navigate = useNavigate(); // Hook to navigate programmatically
+  const [error, setError] = useState(null); // State to handle errors
 
   const handleChange = (e) => {
     setFormData({
@@ -16,20 +17,40 @@ function LoginForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder logic for login
-    console.log('Login form submitted:', formData);
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Assuming login is successful, navigate to the loan application
-    if (formData.username && formData.password) {
-      navigate('/loan-application');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful:', data);
+        
+        // Save JWT token in local storage
+        localStorage.setItem('token', data.token);
+        
+        // Redirect to the loan application page
+        navigate('/loan-application');
+      } else {
+        setError('Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Something went wrong. Please try again.');
     }
   };
 
   return (
     <div className="login-container">
       <h2>Login</h2>
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>
