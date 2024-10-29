@@ -245,3 +245,20 @@ def predict():
     db.session.commit()
 
     return jsonify({'prediction': result})
+
+@app.route('/api/loan-analytics', methods=['GET'])
+@token_required
+def get_loan_analytics():
+    analytics = db.session.execute("SELECT * FROM loan_analytics ORDER BY last_updated DESC LIMIT 1").fetchone()
+    if not analytics:
+        return jsonify({'message': 'No analytics data available'}), 404
+
+    result = {
+        'total_applications': analytics.total_applications,
+        'approved_count': analytics.approved_count,
+        'denied_count': analytics.denied_count,
+        'approval_rate': analytics.approval_rate,
+        'avg_loan_amount': analytics.avg_loan_amount,
+        'last_updated': analytics.last_updated,
+    }
+    return jsonify(result), 200
