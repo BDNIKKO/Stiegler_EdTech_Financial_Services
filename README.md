@@ -1,2 +1,2 @@
-# Stiegler_EdTech_Financial_Services
+# Nexus_Lending_Solutions
 Capstone Project
