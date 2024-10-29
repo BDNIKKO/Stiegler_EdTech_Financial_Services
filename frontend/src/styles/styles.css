@@ -1,0 +1,72 @@
+/* Bootstrap-based professional styling for centralized cards */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+.card {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for a professional look */
+    overflow: hidden; /* Ensure content doesn't overflow */
+}
+
+.card-header, .card-body, .card-footer {
+    padding: 20px;
+}
+
+.card-header {
+    font-weight: bold;
+    text-align: center;
+    background-color: #007bff; /* Bootstrap primary blue */
+    color: #fff;
+    border-radius: 10px 10px 0 0; /* Rounded corners for the top */
+}
+
+.card-body {
+    background-color: #ffffff; /* White card body */
+    padding: 30px;
+    text-align: center; /* Center text in the card body */
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer; /* Add cursor pointer for better UX */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* Add space between form elements */
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    margin-bottom: 10px; /* Add margin for spacing */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+  

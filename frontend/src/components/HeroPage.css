@@ -1,35 +1,176 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
 .hero-container {
-    height: 100vh;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    background: linear-gradient(
+        135deg, 
+        #1a1a1a 0%,
+        #2c2c2c 100%
+    );
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.hero-content {
+    width: 100%;
+    max-width: 750px;
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.01) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    padding: 30px 25px;
+    border-radius: 30px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 0 80px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    color: #ffffff;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: white;
+    margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.hero-content h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.hero-content p {
+    font-size: 1.1em;
+    line-height: 1.5;
+    margin: 20px 0;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 100%;
     text-align: center;
-  }
-  
-  .hero-content {
-    max-width: 600px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-  }
-  
-  .hero-buttons {
-    margin-top: 20px;
-  }
-  
-  .hero-button {
+    font-weight: 300;
+    letter-spacing: 0.3px;
+}
+
+.hero-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.hero-button {
+    display: inline-block;
+    padding: 12px 32px;
+    font-size: 1.1em;
+    color: #fff;
+    background-color: rgba(0, 123, 255, 0.8);
+    border: none;
+    border-radius: 25px;
     text-decoration: none;
-    color: white;
-    background: #2575fc;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin: 10px;
-    transition: background 0.3s ease;
-  }
-  
-  .hero-button:hover {
-    background: #6a11cb;
-  }
-  
+    transition: all 0.3s ease;
+    font-weight: 500;
+    backdrop-filter: blur(5px);
+}
+
+.hero-button:hover {
+    background-color: rgba(0, 123, 255, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .hero-container {
+        padding: 15px;
+    }
+    
+    .hero-content {
+        padding: 25px 20px;
+    }
+    
+    .hero-logo {
+        width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-container {
+        padding: 10px;
+    }
+    
+    .hero-content {
+        padding: 20px 15px;
+    }
+}
+
+/* Update the logo container and logo styles */
+.hero-logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 0;
+    position: relative;
+}
+
+.hero-logo {
+    width: 85%;
+    max-width: 650px;
+    height: auto;
+    border-radius: 40px;
+    transition: all 0.4s ease;
+    opacity: 0.8;
+    filter: brightness(0.9) contrast(1.05) saturate(0.95);
+    mix-blend-mode: soft-light;
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.08),
+        0 0 50px rgba(255, 255, 255, 0.02);
+    transform: translateY(-5px);
+}
+
+/* Optional: Add a subtle hover effect */
+.hero-logo:hover {
+    opacity: 0.95;
+    filter: brightness(0.95) contrast(1.1) saturate(1);
+    transform: translateY(-8px);
+}
+
+/* Add a subtle gradient overlay to help with blending */
+.hero-logo-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle at center,
+        transparent 50%,
+        rgba(26, 26, 26, 0.1) 100%
+    );
+    pointer-events: none;
+}
+
+/* Adjust spacing below logo */
+.hero-content p {
+    font-size: 1.1em;
+    line-height: 1.5;
+    margin: 20px 0;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: 300;
+    letter-spacing: 0.3px;
+}

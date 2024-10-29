@@ -6,11 +6,18 @@ function HeroPage() {
   return (
     <div className="hero-container">
       <div className="hero-content">
-        <h1>Welcome to Stiegler EdTech Financial Services</h1>
-        <p>Apply for loans easily and get real-time decisions.</p>
+        <div className="hero-logo-container">
+          <img 
+            src="/images/nexus-logo.png" 
+            alt="Nexus Lending Solutions" 
+            className="hero-logo"
+          />
+        </div>
+        <p>Experience seamless lending with our real-time decision platform.<br />
+           Fast, secure, and tailored to your needs.</p>
         <div className="hero-buttons">
-          <Link to="/register" className="hero-button">Register</Link>
-          <Link to="/login" className="hero-button">Login</Link>
+          <Link to="/register" className="hero-button">Get Started</Link>
+          <Link to="/login" className="hero-button">Sign In</Link>
         </div>
       </div>
     </div>
