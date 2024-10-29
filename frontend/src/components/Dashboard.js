@@ -1,5 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+
+
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -9,12 +12,32 @@ function Dashboard() {
     navigate('/login');
   };
 
+  const isAdmin = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+  
+    try {
+      const decoded = jwtDecode(token);  // Correct usage
+      return decoded.user === 'admin';  // Adjust based on your JWT structure
+    } catch (error) {
+      console.error('Invalid token:', error);
+      return false;
+    }
+  };
+  
+
   return (
     <div>
       <nav>
         <ul>
           <li><a href="/loan-application">Personal Loan Application</a></li>
           <li><a href="/support">Support</a></li>
+
+          {/* Conditionally render Loan Analytics button only for admin */}
+          {isAdmin() && (
+            <li><button onClick={() => navigate('/loan-dashboard')}>Loan Dashboard</button></li>
+          )}
+
           <li><button onClick={handleLogout}>Log Out</button></li>
         </ul>
       </nav>
