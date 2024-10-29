@@ -5,6 +5,7 @@ import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import Dashboard from './components/Dashboard';
 import Support from './components/Support';
+import LoanAnalytics from './components/LoanAnalytics';
 import Navbar from './components/Navbar';
 import './styles/styles.css';
 
@@ -48,6 +49,7 @@ function App() {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/loan-dashboard" element={<LoanAnalytics />} />
         </Routes>
       </div>
     </Router>

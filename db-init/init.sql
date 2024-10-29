@@ -37,6 +37,17 @@ CREATE TABLE IF NOT EXISTS loan (
     phone VARCHAR(20)
 );
 
+CREATE TABLE IF NOT EXISTS loan_analytics (
+    id SERIAL PRIMARY KEY,
+    total_applications INT,
+    approved_count INT,
+    denied_count INT,
+    approval_rate FLOAT,
+    avg_loan_amount FLOAT,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 
 -- Insert a pre-authenticated admin user (hashed password: 'admin123')
 INSERT INTO "user" (username, password)

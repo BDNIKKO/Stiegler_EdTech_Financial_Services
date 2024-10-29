@@ -53,7 +53,7 @@ services:
     networks:
       - loan-network
     volumes:
-      - ./backend/config/pgadmin_servers.json:/pgadmin4/servers.json # Map pgAdmin server configuration
+      - ./backend/config/pgadmin_servers.json:/pgadmin4/servers.json
 
   frontend:
     build: ./frontend
@@ -62,8 +62,26 @@ services:
     networks:
       - loan-network
 
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=admin
+    volumes:
+      - ./backend:/app
+      - etl_logs:/var/log
+    networks:
+      - loan-network
+
 volumes:
   pgdata:
+  etl_logs:
 
 networks:
   loan-network:

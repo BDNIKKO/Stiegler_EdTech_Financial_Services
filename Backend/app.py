@@ -14,7 +14,9 @@ import logging
 
 # Initialize Flask app and enable CORS
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Authorization", "Content-Type"])
+CORS(app, 
+     resources={r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:8080"]}},
+     supports_credentials=True)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -67,31 +69,34 @@ with open('models/scaler.pkl', 'rb') as f:
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Check if the request is made by the admin user (bypass security)
-        auth_username = request.json.get('username', None)
-        if auth_username == 'admin':
-            logging.info("Bypassing token authentication for admin user.")
-            return f(*args, **kwargs)
-
-        # Proceed with normal token authentication for other users
         token = request.headers.get('Authorization')
+        logging.info(f"Received token in decorator: {token}")
 
         if not token:
+            logging.error("Token is missing")
             return jsonify({'message': 'Token is missing!'}), 401
 
         if token.startswith("Bearer "):
             token = token.split("Bearer ")[1]
 
         try:
-            # Decode the JWT token to validate the user
+            # Decode the JWT token
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            logging.info(f"Decoded token data: {data}")
+            
+            # Check if user is admin
+            if data.get('user') != 'admin':
+                logging.error("Non-admin user attempted to access analytics")
+                return jsonify({'message': 'Admin access required'}), 403
+                
         except jwt.ExpiredSignatureError:
+            logging.error("Token has expired")
             return jsonify({'message': 'Token has expired!'}), 401
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
+            logging.error(f"Invalid token: {str(e)}")
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(*args, **kwargs)
-
     return decorated
 
 # User registration route
@@ -245,3 +250,35 @@ def predict():
     db.session.commit()
 
     return jsonify({'prediction': result})
+
+@app.route('/api/loan-analytics', methods=['GET'])
+@token_required
+def get_loan_analytics():
+    try:
+        logging.info("Accessing loan analytics endpoint")
+        
+        # Get token from request
+        token = request.headers.get('Authorization')
+        logging.info(f"Received token: {token}")
+
+        # Query the database
+        analytics = db.session.execute("SELECT * FROM loan_analytics ORDER BY last_updated DESC LIMIT 1").fetchone()
+        logging.info(f"Query result: {analytics}")
+        
+        if not analytics:
+            logging.warning("No analytics data found")
+            return jsonify({'message': 'No analytics data available'}), 404
+
+        result = {
+            'total_applications': analytics.total_applications,
+            'approved_count': analytics.approved_count,
+            'denied_count': analytics.denied_count,
+            'approval_rate': analytics.approval_rate,
+            'avg_loan_amount': analytics.avg_loan_amount,
+            'last_updated': str(analytics.last_updated),  # Convert to string
+        }
+        logging.info(f"Returning result: {result}")
+        return jsonify(result), 200
+    except Exception as e:
+        logging.error(f"Error in get_loan_analytics: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500

@@ -1,8 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-
-
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -30,12 +28,16 @@ function Dashboard() {
     <div>
       <nav>
         <ul>
-          <li><a href="/loan-application">Personal Loan Application</a></li>
-          <li><a href="/support">Support</a></li>
+          <li><Link to="/loan-application">Personal Loan Application</Link></li>
+          <li><Link to="/support">Support</Link></li>
 
-          {/* Conditionally render Loan Analytics button only for admin */}
+          {/* Use Link or button with navigate */}
           {isAdmin() && (
-            <li><button onClick={() => navigate('/loan-dashboard')}>Loan Dashboard</button></li>
+            <li>
+              <Link to="/loan-dashboard" className="nav-button">
+                Loan Dashboard
+              </Link>
+            </li>
           )}
 
           <li><button onClick={handleLogout}>Log Out</button></li>

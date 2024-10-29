@@ -1,0 +1,108 @@
+.analytics-dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.analytics-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.analytics-card h3 {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.analytics-card .value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.analytics-card .rate {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.analytics-card.total { border-top: 4px solid #2196F3; }
+.analytics-card.approved { border-top: 4px solid #4CAF50; }
+.analytics-card.denied { border-top: 4px solid #F44336; }
+.analytics-card.amount { border-top: 4px solid #FF9800; }
+
+.approval-rate-container {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+  background: #eee;
+  height: 25px;
+  border-radius: 12.5px;
+  position: relative;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+.progress-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-weight: bold;
+}
+
+.last-updated {
+  text-align: right;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+.back-button {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.back-button:hover {
+  background: #1976D2;
+}
+
+.error-message {
+  color: #F44336;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+} 
