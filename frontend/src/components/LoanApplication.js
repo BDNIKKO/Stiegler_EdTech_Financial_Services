@@ -6,9 +6,9 @@ import './LoanApplication.css';
 function LoanApplication() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    income: '',
     loan_amount: '',
     loan_term: '',
-    income: '',
     employment_length: '',
     purpose: '',
   });

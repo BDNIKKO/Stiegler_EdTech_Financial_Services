@@ -174,9 +174,9 @@ def login():
     logging.debug(f"Issued Token: {token}")
     return jsonify({'token': token})
 
-@app.route('/api/predict', methods=['POST'])  # Add this decorator
+@app.route('/api/predict', methods=['POST'])
 @token_required
-def predict(current_user):  # current_user is now passed from the decorator
+def predict(current_user):
     logging.info("Predict route accessed.")
     
     try:
@@ -210,10 +210,10 @@ def predict(current_user):  # current_user is now passed from the decorator
         with np.errstate(all='ignore'):
             features_scaled = scaler.transform(features_array)
             prediction = model.predict(features_scaled)
-            probability = model.predict_proba(features_scaled)[0][1]
+            probability = float(model.predict_proba(features_scaled)[0][1])  # Convert to Python float
 
-        # Apply business rules for final decision
-        approved = (prediction[0] == 1 and 
+        # Apply business rules for final decision - EXACT SAME LOGIC
+        approved = bool(prediction[0] == 1 and  # Convert to Python bool
                    debt_to_income <= 40 and 
                    income >= 20000 and 
                    loan_amount <= income * 5)  # Additional safety check
@@ -221,10 +221,10 @@ def predict(current_user):  # current_user is now passed from the decorator
         # Store loan application
         loan_entry = Loan(
             user_id=current_user.id,
-            income=income,
-            loan_amount=loan_amount,
-            loan_term=loan_term,
-            employment_length=employment_length,
+            income=float(income),  # Explicit conversions
+            loan_amount=float(loan_amount),
+            loan_term=float(loan_term),
+            employment_length=float(employment_length),
             decision='Approved' if approved else 'Denied',
             first_name=current_user.first_name,
             last_name=current_user.last_name,
@@ -236,13 +236,13 @@ def predict(current_user):  # current_user is now passed from the decorator
 
         return jsonify({
             'approved': approved,
-            'probability': float(probability),
+            'probability': probability,
             'message': ('Congratulations! Your loan application has been approved.' 
                        if approved else 
                        'We regret to inform you that your loan application was not approved at this time.'),
             'details': {
-                'debt_to_income': round(debt_to_income, 2),
-                'loan_to_income': round(loan_to_income, 2),
+                'debt_to_income': round(float(debt_to_income), 2),  # Explicit float conversion
+                'loan_to_income': round(float(loan_to_income), 2),  # Explicit float conversion
                 'credit_score_proxy': 'Good' if credit_history else 'Limited'
             }
         }), 200
