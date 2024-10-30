@@ -1,8 +1,68 @@
-.about-container {
-    min-height: 90vh;
+.about-page {
+    min-height: 100vh;
     background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+}
+
+/* Import Dashboard nav styles */
+.dashboard-nav {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-logo-img {
+    height: 40px;
+    width: auto;
+}
+
+.logout-button {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: inherit;
+    margin: 0;
+    height: auto;
+    line-height: normal;
+}
+
+.logout-button:hover {
+    background: rgba(255, 59, 48, 0.3);
+}
+
+/* About Us specific styles */
+.about-container {
     padding: 2rem;
     color: #ffffff;
+    min-height: calc(100vh - 73px);
 }
 
 .about-content {
