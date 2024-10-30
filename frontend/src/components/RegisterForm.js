@@ -35,7 +35,15 @@ function RegisterForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phoneNumber,
+          email: formData.email,
+          address: formData.address
+        }),
       });
 
       const data = await response.json();

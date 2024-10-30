@@ -21,5 +21,11 @@ RUN chmod 0644 /etc/cron.d/etl-cron && \
     chmod 0666 /var/log/etl.log && \
     crontab /etc/cron.d/etl-cron
 
+# Make sure log file exists and has proper permissions
+RUN touch /var/log/etl.log && \
+    chmod 0666 /var/log/etl.log && \
+    chmod 0644 /etc/cron.d/etl-cron && \
+    crontab /etc/cron.d/etl-cron
+
 # Start cron in foreground
 CMD ["cron", "-f"] 
