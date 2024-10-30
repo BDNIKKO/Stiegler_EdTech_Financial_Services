@@ -11,6 +11,7 @@ import LoanApplication from './components/LoanApplication';
 import PrivacyConfirmation from './components/PrivacyConfirmation';
 import LoanResult from './components/LoanResult';
 import LoadingDecision from './components/LoadingDecision';
+import AboutUs from './components/AboutUs';
 import './styles/styles.css';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/privacy-confirmation" element={<PrivacyConfirmation />} />
           <Route path="/loan-result" element={<LoanResult />} />
           <Route path="/loading-decision" element={<LoadingDecision />} />
+          <Route path="/about" element={<AboutUs />} />
         </Routes>
       </div>
     </Router>

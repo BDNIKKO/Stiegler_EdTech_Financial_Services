@@ -31,6 +31,7 @@ function Dashboard() {
         </div>
         <ul className="nav-links">
           <li><Link to="/loan-application" className="nav-link">Personal Loan Application</Link></li>
+          <li><Link to="/about" className="nav-link">About Us</Link></li>
           <li><Link to="/support" className="nav-link">Support</Link></li>
           {isAdmin() && (
             <li>
@@ -62,15 +63,6 @@ function Dashboard() {
                 Contact Support
               </Link>
             </div>
-          </div>
-
-          <div className="dashboard-card">
-            <h2>About Us</h2>
-            <p>
-              We are a financial service provider focused on making loan applications 
-              simple and accessible for everyone. Our advanced technology ensures 
-              a seamless loan application process.
-            </p>
           </div>
         </div>
       </div>

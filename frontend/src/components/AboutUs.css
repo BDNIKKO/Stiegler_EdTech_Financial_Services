@@ -1,0 +1,105 @@
+.about-container {
+    min-height: 90vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    padding: 2rem;
+    color: #ffffff;
+}
+
+.about-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border-radius: 30px;
+    padding: 2rem;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 0 80px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.about-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(45deg, #ffffff, #a0a0a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.about-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.about-section {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.about-section h2 {
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 300;
+}
+
+.about-section p {
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.value-item {
+    padding: 1.5rem;
+    background: rgba(0, 123, 255, 0.1);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.value-item h3 {
+    color: #007bff;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.value-item p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .about-container {
+        padding: 1rem;
+    }
+    
+    .about-content {
+        padding: 1.5rem;
+    }
+    
+    .about-header h1 {
+        font-size: 2rem;
+    }
+    
+    .about-section {
+        padding: 1.5rem;
+    }
+} 
