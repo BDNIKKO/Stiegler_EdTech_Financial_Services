@@ -50,6 +50,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/support" element={<Support />} />
           <Route path="/loan-dashboard" element={<LoanAnalytics />} />
+          <Route path="/loan-application" element={<LoanApplication />} />
         </Routes>
       </div>
     </Router>

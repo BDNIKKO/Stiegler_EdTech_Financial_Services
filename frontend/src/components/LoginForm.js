@@ -1,21 +1,66 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LoginForm.css';
 
 function LoginForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Your login logic here
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store the token in localStorage
+        localStorage.setItem('token', data.token);
+        setMessage({ text: 'Login successful!', type: 'success' });
+        
+        // Navigate to dashboard after a brief delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1000);
+      } else {
+        setMessage({ 
+          text: data.message || 'Invalid username or password', 
+          type: 'error' 
+        });
+      }
+    } catch (error) {
+      setMessage({ 
+        text: 'An error occurred. Please try again.', 
+        type: 'error' 
+      });
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
+        {message.text && (
+          <div className={`message-popup ${message.type}`}>
+            {message.text}
+          </div>
+        )}
+        
         <div className="login-header">
           <img 
             src="/images/nexus-icon.png" 
@@ -50,8 +95,12 @@ function LoginForm() {
             />
           </div>
 
-          <button type="submit" className="login-button">
-            Sign In
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 

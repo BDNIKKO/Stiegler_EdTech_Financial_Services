@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './RegisterForm.css';
 
 function RegisterForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -14,14 +15,59 @@ function RegisterForm() {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e) => {
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Your existing submit logic
+    setIsSubmitting(true);
+
+    // Password validation
+    if (formData.password !== formData.confirmPassword) {
+      setMessage({ text: 'Passwords do not match!', type: 'error' });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      setMessage({ text: 'Registration successful!', type: 'success' });
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (error) {
+      setMessage({ 
+        text: error.message || 'An error occurred. Please try again.', 
+        type: 'error' 
+      });
+      console.error('Registration error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="register-container">
       <div className="register-card">
+        {message.text && (
+          <div className={`message-popup ${message.type}`}>
+            {message.text}
+          </div>
+        )}
+        
         <div className="register-header">
           <img 
             src="/images/nexus-icon.png" 
@@ -129,8 +175,12 @@ function RegisterForm() {
             />
           </div>
 
-          <button type="submit" className="register-button">
-            Create Account
+          <button 
+            type="submit" 
+            className="register-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
