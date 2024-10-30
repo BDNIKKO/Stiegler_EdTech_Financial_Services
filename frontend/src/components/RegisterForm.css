@@ -11,36 +11,40 @@
 
 .register-card {
     width: 100%;
-    max-width: 500px;
+    max-width: 400px;
     background: linear-gradient(
         145deg,
         rgba(255, 255, 255, 0.01) 0%,
         rgba(255, 255, 255, 0.02) 100%
     );
-    padding: 40px 30px;
+    padding: 25px 20px;
     border-radius: 30px;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.1),
         inset 0 0 80px rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .register-header {
     text-align: center;
-    margin-bottom: 35px;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
 .register-logo {
-    width: 60px;
+    width: 45px;
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     opacity: 0.9;
 }
 
 .register-header h2 {
     color: #ffffff;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 300;
     margin: 0;
 }
@@ -48,13 +52,18 @@
 .register-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+    margin: 0 auto;
 }
 
 .form-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     width: 100%;
+    max-width: 300px;
+    justify-content: center;
 }
 
 .form-row .form-group {
@@ -63,18 +72,23 @@
 
 .form-group {
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 300px;
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px 16px;
+    padding: 10px 14px;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
     box-sizing: border-box;
+    height: 40px;
 }
 
 .form-group input:focus {
@@ -90,15 +104,15 @@
 
 .register-button {
     width: 100%;
-    padding: 12px;
+    height: 40px;
     background: rgba(0, 123, 255, 0.8);
     color: #ffffff;
     border: none;
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 10px;
+    margin-top: 5px;
     backdrop-filter: blur(5px);
 }
 
@@ -110,8 +124,10 @@
 
 .register-footer {
     text-align: center;
-    margin-top: 25px;
+    margin-top: 15px;
     color: #ffffff;
+    font-size: 0.9rem;
+    width: 100%;
 }
 
 .register-footer a {
