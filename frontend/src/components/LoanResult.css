@@ -1,0 +1,149 @@
+.result-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.result-header {
+  padding: 2.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.1));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-header.approved {
+  background: linear-gradient(135deg, rgba(46, 125, 50, 0.3), rgba(46, 125, 50, 0.2));
+}
+
+.result-header h2 {
+  color: #ffffff;
+  font-size: 2.2rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.confirmation-number {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.result-content {
+  padding: 2.5rem;
+  color: #ffffff;
+}
+
+.status-message {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  color: #ffffff;
+}
+
+.next-steps-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+}
+
+.next-steps-section h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+.package-contents h4 {
+  color: #ffffff;
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.package-contents ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.package-contents li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.bullet {
+  color: #007bff;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+}
+
+.contact-info {
+  background: rgba(0, 123, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+.contact-info p {
+  color: #ffffff;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.reference {
+  margin-top: 1rem;
+  font-weight: 500;
+  color: #007bff;
+}
+
+.dashboard-button {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 123, 255, 0.2);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.dashboard-button:hover {
+  background: rgba(0, 123, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .result-container {
+    padding: 1rem;
+  }
+  
+  .result-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .status-message {
+    font-size: 1rem;
+  }
+}

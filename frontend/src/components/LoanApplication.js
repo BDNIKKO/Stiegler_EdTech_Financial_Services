@@ -76,22 +76,11 @@ function LoanApplication() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({
-          text: data.message,
-          type: data.approved ? 'success' : 'error',
-          details: data.approved ? 
-            `Approval Confidence: ${(data.probability * 100).toFixed(1)}%\n` +
-            `Debt-to-Income Ratio: ${data.details.debt_to_income}%\n` +
-            `Credit History: ${data.details.credit_score_proxy}` 
-            : 
-            'Factors considered include income, debt-to-income ratio, and employment history.'
-        });
-
-        if (data.approved) {
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 5000);
-        }
+        const loanDecision = {
+          approved: data.approved,
+          details: data.details
+        };
+        navigate('/privacy-confirmation', { state: { loanDecision } });
       } else if (response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');

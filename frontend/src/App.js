@@ -8,6 +8,9 @@ import Support from './components/Support';
 import LoanAnalytics from './components/LoanAnalytics';
 import Navbar from './components/Navbar';
 import LoanApplication from './components/LoanApplication';
+import PrivacyConfirmation from './components/PrivacyConfirmation';
+import LoanResult from './components/LoanResult';
+import LoadingDecision from './components/LoadingDecision';
 import './styles/styles.css';
 
 function App() {
@@ -23,6 +26,9 @@ function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/loan-dashboard" element={<LoanAnalytics />} />
           <Route path="/loan-application" element={<LoanApplication />} />
+          <Route path="/privacy-confirmation" element={<PrivacyConfirmation />} />
+          <Route path="/loan-result" element={<LoanResult />} />
+          <Route path="/loading-decision" element={<LoadingDecision />} />
         </Routes>
       </div>
     </Router>
