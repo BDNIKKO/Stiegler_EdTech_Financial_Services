@@ -7,36 +7,8 @@ import Dashboard from './components/Dashboard';
 import Support from './components/Support';
 import LoanAnalytics from './components/LoanAnalytics';
 import Navbar from './components/Navbar';
+import LoanApplication from './components/LoanApplication';
 import './styles/styles.css';
-
-function LoanApplication() {
-  const [formData, setFormData] = useState({
-    income: '',
-    loan_amount: '',
-    loan_term: '',
-    employment_length: ''
-  });
-
-  const [prediction, setPrediction] = useState(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check if token is present; if not, redirect to login
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Add the rest of your LoanApplication component code here
-}
 
 function App() {
   return (

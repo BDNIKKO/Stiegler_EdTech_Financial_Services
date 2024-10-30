@@ -84,10 +84,17 @@ def token_required(f):
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             logging.info(f"Decoded token data: {data}")
             
-            # Check if user is admin
-            if data.get('user') != 'admin':
+            # Only check for admin access on analytics endpoints
+            if request.endpoint == 'get_loan_analytics' and data.get('user') != 'admin':
                 logging.error("Non-admin user attempted to access analytics")
                 return jsonify({'message': 'Admin access required'}), 403
+            
+            # Get current user
+            current_user = User.query.filter_by(username=data['user']).first()
+            if not current_user:
+                return jsonify({'message': 'User not found!'}), 401
+                
+            return f(current_user, *args, **kwargs)
                 
         except jwt.ExpiredSignatureError:
             logging.error("Token has expired")
@@ -96,7 +103,6 @@ def token_required(f):
             logging.error(f"Invalid token: {str(e)}")
             return jsonify({'message': 'Token is invalid!'}), 401
 
-        return f(*args, **kwargs)
     return decorated
 
 # User registration route
@@ -170,90 +176,84 @@ def login():
 
 @app.route('/api/predict', methods=['POST'])  # Add this decorator
 @token_required
-def predict():
+def predict(current_user):  # current_user is now passed from the decorator
     logging.info("Predict route accessed.")
-
-    # Extract the username from the JWT token
-    token = request.headers.get('Authorization')
-    if token and token.startswith("Bearer "):
-        token = token.split("Bearer ")[1]
+    
     try:
-        decoded_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-        username = decoded_token.get('user')
-    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
-        logging.error(f"Token error: {e}")
-        return jsonify({'message': 'Invalid or expired token!'}), 401
+        # Extract features from request
+        data = request.get_json()
+        features = [
+            float(data.get('annual_income', 0)),
+            float(data.get('loan_amount', 0)),
+            float(data.get('loan_term', 0)),
+            float(data.get('employment_length', 0))
+        ]
 
-    # Fetch the user from the database
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'message': 'User not found!'}), 404
+        if 0 in features:
+            return jsonify({'message': 'Missing required input values!'}), 400
 
-    # Extract features from request
-    data = request.get_json()
-    features = [
-        data.get('income'),
-        data.get('loan_amount'),
-        data.get('loan_term'),
-        data.get('employment_length')
-    ]
+        # MLM Logic: Calculate additional features
+        income, loan_amount, loan_term, employment_length = features
+        debt_to_income = (loan_amount / income) * 100
+        loan_to_income = (loan_amount / income) * 100
+        credit_history = 1 if employment_length > 5 else 0
 
-    if None in features:
-        return jsonify({'message': 'Missing required input values!'}), 400
+        # Prepare feature set for model prediction
+        features_array = [
+            income, loan_amount, loan_term,
+            employment_length, debt_to_income,
+            loan_to_income, credit_history
+        ]
+        features_array = np.array(features_array).reshape(1, -1)
 
-    try:
-        features = list(map(float, features))
-    except ValueError:
-        return jsonify({'message': 'All input values must be numbers!'}), 400
+        # Make prediction using the model
+        with np.errstate(all='ignore'):
+            features_scaled = scaler.transform(features_array)
+            prediction = model.predict(features_scaled)
+            probability = model.predict_proba(features_scaled)[0][1]
 
-    # MLM Logic: Calculate additional features
-    income, loan_amount, loan_term, employment_length = features
-    loan_term_months = loan_term * 12
-    debt_to_income = (loan_amount / income) * 100
-    loan_to_income = (loan_amount / income) * 100
-    credit_history = 1 if employment_length > 5 else 0
+        # Apply business rules for final decision
+        approved = (prediction[0] == 1 and 
+                   debt_to_income <= 40 and 
+                   income >= 20000 and 
+                   loan_amount <= income * 5)  # Additional safety check
 
-    # Prepare feature set for model prediction
-    features = [
-        income, loan_amount, loan_term_months,
-        employment_length, debt_to_income,
-        loan_to_income, credit_history
-    ]
-    features = np.array(features).reshape(1, -1)
+        # Store loan application
+        loan_entry = Loan(
+            user_id=current_user.id,
+            income=income,
+            loan_amount=loan_amount,
+            loan_term=loan_term,
+            employment_length=employment_length,
+            decision='Approved' if approved else 'Denied',
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            email=current_user.email,
+            phone=current_user.phone
+        )
+        db.session.add(loan_entry)
+        db.session.commit()
 
-    with np.errstate(all='ignore'):
-        features_scaled = scaler.transform(features)
+        return jsonify({
+            'approved': approved,
+            'probability': float(probability),
+            'message': ('Congratulations! Your loan application has been approved.' 
+                       if approved else 
+                       'We regret to inform you that your loan application was not approved at this time.'),
+            'details': {
+                'debt_to_income': round(debt_to_income, 2),
+                'loan_to_income': round(loan_to_income, 2),
+                'credit_score_proxy': 'Good' if credit_history else 'Limited'
+            }
+        }), 200
 
-    # Get prediction from the model
-    prediction = model.predict(features_scaled)
-
-    # Apply business rules for final decision
-    if debt_to_income > 40 or income < 20000:
-        result = 'Denied'
-    else:
-        result = 'Approved' if prediction[0] == 1 else 'Denied'
-
-    # Log loan details along with user information
-    loan_entry = Loan(
-        income=income,
-        loan_amount=loan_amount,
-        loan_term=loan_term,
-        employment_length=employment_length,
-        decision=result,
-        user_id=user.id,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        phone=user.phone,
-        email=user.email
-    )
-    db.session.add(loan_entry)
-    db.session.commit()
-
-    return jsonify({'prediction': result})
+    except Exception as e:
+        logging.error(f"Error in predict: {str(e)}")
+        return jsonify({'message': f'Error processing application: {str(e)}'}), 400
 
 @app.route('/api/loan-analytics', methods=['GET'])
 @token_required
-def get_loan_analytics():
+def get_loan_analytics(current_user):
     try:
         logging.info("Accessing loan analytics endpoint")
         
