@@ -2,10 +2,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 90vh;
     width: 100vw;
     background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
 }
 
@@ -17,7 +17,7 @@
         rgba(255, 255, 255, 0.01) 0%,
         rgba(255, 255, 255, 0.02) 100%
     );
-    padding: 40px 30px;
+    padding: 30px 25px;
     border-radius: 30px;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.1),
@@ -35,7 +35,7 @@
 }
 
 .login-logo {
-    width: 60px;
+    width: 50px;
     height: auto;
     margin-bottom: 20px;
     opacity: 0.9;

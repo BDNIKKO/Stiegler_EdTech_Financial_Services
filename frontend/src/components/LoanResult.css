@@ -1,7 +1,7 @@
 .result-container {
-  min-height: 100vh;
+  min-height: 90vh;
   background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 .result-header {
-  padding: 2.5rem;
+  padding: 2rem;
   text-align: center;
   background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.1));
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -46,7 +46,7 @@
 }
 
 .result-content {
-  padding: 2.5rem;
+  padding: 2rem;
   color: #ffffff;
 }
 
