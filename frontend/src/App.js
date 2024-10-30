@@ -11,25 +11,29 @@ import PrivacyConfirmation from './components/PrivacyConfirmation';
 import LoanResult from './components/LoanResult';
 import LoadingDecision from './components/LoadingDecision';
 import AboutUs from './components/AboutUs';
+import Footer from './components/Footer';
 import './styles/styles.css';
 
 function App() {
   return (
     <Router>
-      <div className="app">
-        <Routes>
-          <Route path="/" element={<HeroPage />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/loan-dashboard" element={<LoanAnalytics />} />
-          <Route path="/loan-application" element={<LoanApplication />} />
-          <Route path="/privacy-confirmation" element={<PrivacyConfirmation />} />
-          <Route path="/loan-result" element={<LoanResult />} />
-          <Route path="/loading-decision" element={<LoadingDecision />} />
-          <Route path="/about" element={<AboutUs />} />
-        </Routes>
+      <div className="app-container">
+        <div className="content-wrapper">
+          <Routes>
+            <Route path="/" element={<HeroPage />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/loan-dashboard" element={<LoanAnalytics />} />
+            <Route path="/loan-application" element={<LoanApplication />} />
+            <Route path="/privacy-confirmation" element={<PrivacyConfirmation />} />
+            <Route path="/loan-result" element={<LoanResult />} />
+            <Route path="/loading-decision" element={<LoadingDecision />} />
+            <Route path="/about" element={<AboutUs />} />
+          </Routes>
+        </div>
+        <Footer />
       </div>
     </Router>
   );
