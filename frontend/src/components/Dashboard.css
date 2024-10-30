@@ -53,6 +53,10 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: inherit;
+    margin: 0;
+    height: auto;
+    line-height: normal;
 }
 
 .logout-button:hover {
