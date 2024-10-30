@@ -2,9 +2,9 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install cron
+# Install cron and dos2unix
 RUN apt-get update && \
-    apt-get install -y cron && \
+    apt-get install -y cron dos2unix && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
@@ -16,16 +16,13 @@ COPY . .
 
 # Setup cron job
 COPY crontab /etc/cron.d/etl-cron
-RUN chmod 0644 /etc/cron.d/etl-cron && \
+
+# Fix line endings and ensure proper format
+RUN dos2unix /etc/cron.d/etl-cron && \
+    chmod 0644 /etc/cron.d/etl-cron && \
     touch /var/log/etl.log && \
     chmod 0666 /var/log/etl.log && \
     crontab /etc/cron.d/etl-cron
 
-# Make sure log file exists and has proper permissions
-RUN touch /var/log/etl.log && \
-    chmod 0666 /var/log/etl.log && \
-    chmod 0644 /etc/cron.d/etl-cron && \
-    crontab /etc/cron.d/etl-cron
-
 # Start cron in foreground
-CMD ["cron", "-f"] 
+CMD ["cron", "-f"]

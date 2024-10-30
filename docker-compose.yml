@@ -12,6 +12,8 @@ services:
       FLASK_ENV: development
       SQLALCHEMY_WARN_20: 1
       SQLALCHEMY_SILENCE_UBER_WARNING: 1
+      FRESHDESK_API_KEY: BKLJtkXkZ2dA8W4gaW
+      FRESHDESK_DOMAIN: stiegler.freshdesk.com
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,6 +61,8 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    environment:
+      REACT_APP_FRESHDESK_URL: stiegler.freshdesk.com
     networks:
       - loan-network
 
