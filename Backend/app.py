@@ -181,7 +181,6 @@ def login():
 @token_required
 def predict(current_user):
     logging.info("Predict route accessed.")
-    
     try:
         # Extract features from request
         data = request.get_json()
@@ -191,40 +190,50 @@ def predict(current_user):
             float(data.get('loan_term', 0)),
             float(data.get('employment_length', 0))
         ]
-
+        
         if 0 in features:
             return jsonify({'message': 'Missing required input values!'}), 400
-
-        # MLM Logic: Calculate additional features
+            
+        # Extract individual features
         income, loan_amount, loan_term, employment_length = features
+        
+        # Calculate key metrics
         debt_to_income = (loan_amount / income) * 100
         loan_to_income = (loan_amount / income) * 100
-        credit_history = 1 if employment_length > 5 else 0
+        credit_history = min(employment_length / 10, 1.0)  # Scales from 0 to 1 over 10 years
 
-        # Prepare feature set for model prediction
-        features_array = [
-            income, loan_amount, loan_term,
-            employment_length, debt_to_income,
-            loan_to_income, credit_history
-        ]
-        features_array = np.array(features_array).reshape(1, -1)
-
-        # Make prediction using the model
-        with np.errstate(all='ignore'):
-            features_scaled = scaler.transform(features_array)
-            prediction = model.predict(features_scaled)
-            probability = float(model.predict_proba(features_scaled)[0][1])  # Convert to Python float
-
-        # Apply business rules for final decision - EXACT SAME LOGIC
-        approved = bool(prediction[0] == 1 and  # Convert to Python bool
-                   debt_to_income <= 40 and 
-                   income >= 20000 and 
-                   loan_amount <= income * 5)  # Additional safety check
+        # First check if it's a "definitely approve" case
+        if (debt_to_income <= 15 and        # Very low DTI
+            income >= 50000 and             # Strong income
+            employment_length >= 5 and       # Established employment
+            loan_amount <= income * 0.25):   # Conservative loan amount
+            approved = True
+            
+        else:
+            # Otherwise use MLM and standard criteria
+            features_array = [
+                income, loan_amount, loan_term,
+                employment_length, debt_to_income,
+                loan_to_income, credit_history
+            ]
+            features_array = np.array(features_array).reshape(1, -1)
+            
+            # Make prediction using the model
+            with np.errstate(all='ignore'):
+                features_scaled = scaler.transform(features_array)
+                prediction = model.predict(features_scaled)
+                probability = float(model.predict_proba(features_scaled)[0][1])
+                
+            # Apply business rules for final decision
+            approved = bool(prediction[0] == 1 and
+                          debt_to_income <= 40 and 
+                          income >= 20000 and 
+                          loan_amount <= income * 5)
 
         # Store loan application
         loan_entry = Loan(
             user_id=current_user.id,
-            income=float(income),  # Explicit conversions
+            income=float(income),
             loan_amount=float(loan_amount),
             loan_term=float(loan_term),
             employment_length=float(employment_length),
@@ -234,25 +243,24 @@ def predict(current_user):
             email=current_user.email,
             phone=current_user.phone
         )
+        
         db.session.add(loan_entry)
         db.session.commit()
 
+        # Return prediction result
         return jsonify({
             'approved': approved,
-            'probability': probability,
-            'message': ('Congratulations! Your loan application has been approved.' 
-                       if approved else 
-                       'We regret to inform you that your loan application was not approved at this time.'),
-            'details': {
-                'debt_to_income': round(float(debt_to_income), 2),  # Explicit float conversion
-                'loan_to_income': round(float(loan_to_income), 2),  # Explicit float conversion
-                'credit_score_proxy': 'Good' if credit_history else 'Limited'
+            'message': 'Loan approved!' if approved else 'Loan denied.',
+            'metrics': {
+                'debt_to_income': round(debt_to_income, 2),
+                'loan_to_income': round(loan_to_income, 2),
+                'employment_score': round(credit_history * 100, 2)
             }
         }), 200
 
     except Exception as e:
-        logging.error(f"Error in predict: {str(e)}")
-        return jsonify({'message': f'Error processing application: {str(e)}'}), 400
+        logging.error(f"Error in predict route: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 @app.route('/api/loan-analytics', methods=['GET'])
 @token_required
