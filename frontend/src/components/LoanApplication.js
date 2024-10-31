@@ -130,7 +130,9 @@ function LoanApplication() {
     <div className="loan-application-page">
       <nav className="dashboard-nav">
         <div className="nav-logo">
-          <img src="/images/nexus-icon.png" alt="Nexus Icon" className="nav-logo-img" />
+          <Link to="/dashboard">
+            <img src="/images/nexus-icon.png" alt="Nexus Icon" className="nav-logo-img" />
+          </Link>
         </div>
         <ul className="nav-links">
           <li><Link to="/loan-application" className="nav-link">Personal Loan Application</Link></li>

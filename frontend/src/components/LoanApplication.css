@@ -237,4 +237,14 @@
     .loan-application-card h1 {
         font-size: 1.5rem;
     }
+}
+
+.nav-logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.nav-logo img {
+    cursor: pointer;
 } 
