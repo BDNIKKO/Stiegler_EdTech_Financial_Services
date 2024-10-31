@@ -181,7 +181,6 @@ def login():
 @token_required
 def predict(current_user):
     logging.info("Predict route accessed.")
-    
     try:
         # Extract features from request
         data = request.get_json()
@@ -191,40 +190,52 @@ def predict(current_user):
             float(data.get('loan_term', 0)),
             float(data.get('employment_length', 0))
         ]
-
+        
         if 0 in features:
             return jsonify({'message': 'Missing required input values!'}), 400
-
-        # MLM Logic: Calculate additional features
+            
+        # Extract individual features
         income, loan_amount, loan_term, employment_length = features
+        
+        # Calculate key metrics
         debt_to_income = (loan_amount / income) * 100
         loan_to_income = (loan_amount / income) * 100
-        credit_history = 1 if employment_length > 5 else 0
+        credit_history = min(employment_length / 10, 1.0)  # Scales from 0 to 1 over 10 years
 
-        # Prepare feature set for model prediction
-        features_array = [
-            income, loan_amount, loan_term,
-            employment_length, debt_to_income,
-            loan_to_income, credit_history
-        ]
-        features_array = np.array(features_array).reshape(1, -1)
+        # Initialize approved as False
+        approved = False
+        
+        # First check if it's a "definitely approve" case
+        if (debt_to_income <= 15 and
+            income >= 50000 and
+            employment_length >= 5 and
+            loan_amount <= income * 0.25):
+            approved = True
+        else:
+            # MLM and standard criteria check
+            features_array = [
+                income, loan_amount, loan_term,
+                employment_length, debt_to_income,
+                loan_to_income, credit_history
+            ]
+            features_array = np.array(features_array).reshape(1, -1)
+            
+            with np.errstate(all='ignore'):
+                features_scaled = scaler.transform(features_array)
+                prediction = model.predict(features_scaled)
+                probability = float(model.predict_proba(features_scaled)[0][1])
+                
+            # Second approval check
+            if (prediction[0] == 1 and
+                debt_to_income <= 40 and 
+                income >= 20000 and 
+                loan_amount <= income * 5):
+                approved = True
 
-        # Make prediction using the model
-        with np.errstate(all='ignore'):
-            features_scaled = scaler.transform(features_array)
-            prediction = model.predict(features_scaled)
-            probability = float(model.predict_proba(features_scaled)[0][1])  # Convert to Python float
-
-        # Apply business rules for final decision - EXACT SAME LOGIC
-        approved = bool(prediction[0] == 1 and  # Convert to Python bool
-                   debt_to_income <= 40 and 
-                   income >= 20000 and 
-                   loan_amount <= income * 5)  # Additional safety check
-
-        # Store loan application
+        # Now 'approved' will be consistent for both storage and response
         loan_entry = Loan(
             user_id=current_user.id,
-            income=float(income),  # Explicit conversions
+            income=float(income),
             loan_amount=float(loan_amount),
             loan_term=float(loan_term),
             employment_length=float(employment_length),
@@ -234,25 +245,23 @@ def predict(current_user):
             email=current_user.email,
             phone=current_user.phone
         )
+        
         db.session.add(loan_entry)
         db.session.commit()
 
         return jsonify({
             'approved': approved,
-            'probability': probability,
-            'message': ('Congratulations! Your loan application has been approved.' 
-                       if approved else 
-                       'We regret to inform you that your loan application was not approved at this time.'),
-            'details': {
-                'debt_to_income': round(float(debt_to_income), 2),  # Explicit float conversion
-                'loan_to_income': round(float(loan_to_income), 2),  # Explicit float conversion
-                'credit_score_proxy': 'Good' if credit_history else 'Limited'
+            'message': 'Loan approved!' if approved else 'Loan denied.',
+            'metrics': {
+                'debt_to_income': round(debt_to_income, 2),
+                'loan_to_income': round(loan_to_income, 2),
+                'employment_score': round(credit_history * 100, 2)
             }
         }), 200
 
     except Exception as e:
-        logging.error(f"Error in predict: {str(e)}")
-        return jsonify({'message': f'Error processing application: {str(e)}'}), 400
+        logging.error(f"Error in predict route: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 @app.route('/api/loan-analytics', methods=['GET'])
 @token_required
@@ -423,4 +432,36 @@ def get_loan_applications_list(current_user):
 
     except Exception as e:
         logging.error(f"Error in get_loan_applications_list: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/user/loans', methods=['GET'])
+@token_required
+def get_user_loans(current_user):
+    try:
+        # Get user's most recent loan application
+        recent_loan = Loan.query.filter_by(user_id=current_user.id)\
+            .order_by(Loan.timestamp.desc())\
+            .first()
+        
+        # Get user's loan statistics
+        user_loans = Loan.query.filter_by(user_id=current_user.id).all()
+        total_applications = len(user_loans)
+        total_amount = sum(loan.loan_amount for loan in user_loans)
+        
+        return jsonify({
+            'firstName': current_user.first_name,
+            'recentLoan': {
+                'loan_amount': float(recent_loan.loan_amount),
+                'loan_term': recent_loan.loan_term,
+                'decision': recent_loan.decision,
+                'timestamp': recent_loan.timestamp.isoformat()
+            } if recent_loan else None,
+            'stats': {
+                'totalApplications': total_applications,
+                'totalAmount': float(total_amount)
+            }
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Error in get_user_loans: {str(e)}")
         return jsonify({'message': f'Error: {str(e)}'}), 500
