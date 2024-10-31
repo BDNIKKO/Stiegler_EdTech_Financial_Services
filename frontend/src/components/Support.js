@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Support.css';
 
 function Support() {
-    const [testResult, setTestResult] = useState(null);
+    const navigate = useNavigate();
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [ticketData, setTicketData] = useState({
         subject: '',
@@ -11,30 +13,16 @@ function Support() {
         email: ''
     });
 
-    const testConnection = async () => {
-        setIsLoading(true);
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/test-freshdesk', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const data = await response.json();
-            setTestResult(data);
-            console.log('Connection test result:', data);
-        } catch (err) {
-            setError(err.message);
-            console.error('Connection test error:', err);
-        } finally {
-            setIsLoading(false);
-        }
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        navigate('/login');
     };
 
     const createTicket = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
+        setSuccess(null);
         try {
             const token = localStorage.getItem('token');
             const response = await fetch('http://localhost:5000/api/create-ticket', {
@@ -48,7 +36,7 @@ function Support() {
 
             const data = await response.json();
             if (response.ok) {
-                alert('Ticket created successfully!');
+                setSuccess('Support ticket created successfully. You will receive a confirmation email with your ticket details and status updates.');
                 setTicketData({ subject: '', description: '', email: '' });
             } else {
                 throw new Error(data.message || 'Failed to create ticket');
@@ -62,58 +50,65 @@ function Support() {
 
     return (
         <div className="support-container">
-            <h2>Support System</h2>
-            
-            <button 
-                onClick={testConnection}
-                disabled={isLoading}
-            >
-                {isLoading ? 'Testing...' : 'Test Connection'}
-            </button>
-            
-            <form onSubmit={createTicket} className="ticket-form">
-                <h3>Create Support Ticket</h3>
-                <input
-                    type="text"
-                    placeholder="Subject"
-                    value={ticketData.subject}
-                    onChange={(e) => setTicketData({...ticketData, subject: e.target.value})}
-                    required
-                />
-                <textarea
-                    placeholder="Description"
-                    value={ticketData.description}
-                    onChange={(e) => setTicketData({...ticketData, description: e.target.value})}
-                    required
-                />
-                <input
-                    type="email"
-                    placeholder="Your Email"
-                    value={ticketData.email}
-                    onChange={(e) => setTicketData({...ticketData, email: e.target.value})}
-                    required
-                />
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Creating...' : 'Create Ticket'}
-                </button>
-            </form>
-            
-            {testResult && (
-                <div className="test-results">
-                    <h3>Test Results:</h3>
-                    <ul>
-                        <li>Database Connected: {testResult.container_status.db_connected ? '✅' : '❌'}</li>
-                        <li>Freshdesk Connected: {testResult.container_status.freshdesk_connected ? '✅' : '❌'}</li>
-                        <li>Freshdesk Status: {testResult.freshdesk_status}</li>
-                    </ul>
+            <nav className="dashboard-nav">
+                <div className="nav-logo">
+                    <Link to="/dashboard">
+                        <img src="/images/nexus-icon.png" alt="Nexus Icon" className="nav-logo-img" />
+                    </Link>
                 </div>
-            )}
-            
-            {error && (
-                <div className="error-message">
-                    Error: {error}
+                <ul className="nav-links">
+                    <li><Link to="/loan-application" className="nav-link">Personal Loan Application</Link></li>
+                    <li><Link to="/about" className="nav-link">About Us</Link></li>
+                    <li><Link to="/support" className="nav-link">Support</Link></li>
+                    <li><button onClick={handleLogout} className="logout-button">Log Out</button></li>
+                </ul>
+            </nav>
+
+            <div className="support-content">
+                <h2>Help Desk</h2>
+                <div className="support-description">
+                    <p>Our dedicated support professionals are here to assist you with any questions or concerns you may have. Please provide detailed information to help us serve you better.</p>
                 </div>
-            )}
+                
+                <form onSubmit={createTicket} className="ticket-form">
+                    <h3>Create Support Ticket</h3>
+                    <input
+                        type="text"
+                        placeholder="Subject"
+                        value={ticketData.subject}
+                        onChange={(e) => setTicketData({...ticketData, subject: e.target.value})}
+                        required
+                    />
+                    <textarea
+                        placeholder="Description"
+                        value={ticketData.description}
+                        onChange={(e) => setTicketData({...ticketData, description: e.target.value})}
+                        required
+                    />
+                    <input
+                        type="email"
+                        placeholder="Your Email"
+                        value={ticketData.email}
+                        onChange={(e) => setTicketData({...ticketData, email: e.target.value})}
+                        required
+                    />
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Creating...' : 'Create Ticket'}
+                    </button>
+                </form>
+                
+                {error && (
+                    <div className="error-message">
+                        Error: {error}
+                    </div>
+                )}
+                
+                {success && (
+                    <div className="success-message">
+                        {success}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
