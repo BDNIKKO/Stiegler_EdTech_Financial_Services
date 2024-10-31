@@ -6,4 +6,3 @@ DATABASE_URL=postgresql://admin:admin@postgres:5432/admin
 */2 * * * * cd /app && python3 etl.py >> /var/log/etl.log 2>&1
 
 # Empty line (required)
-

@@ -13,6 +13,7 @@ from functools import wraps
 import logging
 import requests
 import base64
+from sqlalchemy import func
 
 # Initialize Flask app and enable CORS
 app = Flask(__name__)
@@ -259,28 +260,34 @@ def get_loan_analytics(current_user):
     try:
         logging.info("Accessing loan analytics endpoint")
         
-        # Get token from request
-        token = request.headers.get('Authorization')
-        logging.info(f"Received token: {token}")
+        if current_user.username != 'admin':
+            logging.error("Non-admin user attempted to access analytics")
+            return jsonify({'message': 'Admin access required'}), 403
 
-        # Query the database
-        analytics = db.session.execute("SELECT * FROM loan_analytics ORDER BY last_updated DESC LIMIT 1").fetchone()
-        logging.info(f"Query result: {analytics}")
+        # Get analytics from the loan table directly
+        total_applications = Loan.query.count()
+        approved_count = Loan.query.filter_by(decision='Approved').count()
+        denied_count = Loan.query.filter_by(decision='Denied').count()
         
-        if not analytics:
-            logging.warning("No analytics data found")
-            return jsonify({'message': 'No analytics data available'}), 404
+        # Calculate approval rate
+        approval_rate = (approved_count / total_applications * 100) if total_applications > 0 else 0
+        
+        # Calculate average loan amount
+        avg_loan = db.session.query(
+            func.avg(Loan.loan_amount)
+        ).scalar() or 0
 
         result = {
-            'total_applications': analytics.total_applications,
-            'approved_count': analytics.approved_count,
-            'denied_count': analytics.denied_count,
-            'approval_rate': analytics.approval_rate,
-            'avg_loan_amount': analytics.avg_loan_amount,
-            'last_updated': str(analytics.last_updated),  # Convert to string
+            'total_applications': total_applications,
+            'approved_count': approved_count,
+            'denied_count': denied_count,
+            'approval_rate': float(approval_rate),
+            'avg_loan_amount': float(avg_loan),
+            'last_updated': datetime.datetime.utcnow().isoformat()
         }
-        logging.info(f"Returning result: {result}")
+
         return jsonify(result), 200
+
     except Exception as e:
         logging.error(f"Error in get_loan_analytics: {str(e)}")
         return jsonify({'message': f'Error: {str(e)}'}), 500
@@ -376,3 +383,44 @@ def create_ticket(current_user):
             'status': 'error',
             'message': str(e)
         }), 500
+
+@app.route('/api/loan-applications/list', methods=['GET'])
+@token_required
+def get_loan_applications_list(current_user):
+    try:
+        logging.info("Accessing loan applications list endpoint")
+        
+        # Check if user is admin
+        if current_user.username != 'admin':
+            logging.error("Non-admin user attempted to access loan applications list")
+            return jsonify({'message': 'Admin access required'}), 403
+
+        # Query the database for all loan applications
+        applications = Loan.query.with_entities(
+            Loan.id,
+            Loan.first_name,
+            Loan.last_name,
+            Loan.email,
+            Loan.phone,
+            Loan.loan_amount,
+            Loan.decision,
+            Loan.timestamp
+        ).order_by(Loan.timestamp.desc()).all()
+
+        # Format the results
+        results = [{
+            'id': app.id,
+            'firstName': app.first_name,
+            'lastName': app.last_name,
+            'email': app.email,
+            'phone': app.phone,
+            'loanAmount': float(app.loan_amount),
+            'status': app.decision.lower(),
+            'timestamp': app.timestamp.isoformat()
+        } for app in applications]
+
+        return jsonify(results), 200
+
+    except Exception as e:
+        logging.error(f"Error in get_loan_applications_list: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500
