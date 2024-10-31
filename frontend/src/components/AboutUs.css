@@ -74,9 +74,9 @@
         rgba(255, 255, 255, 0.02) 100%
     );
     border-radius: 30px;
-    padding: 2rem;
+    padding: 3rem;
     box-shadow: 
-        0 8px 32px rgba(255, 255, 255, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.2),
         0 4px 16px rgba(255, 255, 255, 0.05),
         0 0 8px rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
@@ -110,38 +110,48 @@
 }
 
 .about-header h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(45deg, #ffffff, #a0a0a0);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin: 0;
+    font-size: 3rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 .about-sections {
     display: flex;
     flex-direction: column;
     gap: 3rem;
+    margin-top: 2rem;
 }
 
 .about-section {
-    padding: 2rem;
+    padding: 2.5rem;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeInUp 0.6s ease forwards;
+    text-align: center;
+}
+
+.about-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.1);
 }
 
 .about-section h2 {
     color: #ffffff;
     margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    font-weight: 300;
+    font-size: 2rem;
+    font-weight: 500;
+    text-align: center;
 }
 
 .about-section p {
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
     font-size: 1.1rem;
+    text-align: left;
 }
 
 .values-grid {
@@ -149,24 +159,34 @@
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1.5rem;
     margin-top: 1.5rem;
+    text-align: center;
 }
 
 .value-item {
-    padding: 1.5rem;
-    background: rgba(0, 123, 255, 0.1);
+    padding: 2rem;
+    background: rgba(0, 123, 255, 0.05);
     border-radius: 15px;
     border: 1px solid rgba(0, 123, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.value-item:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.3);
 }
 
 .value-item h3 {
     color: #007bff;
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
 }
 
 .value-item p {
-    font-size: 1rem;
-    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {
@@ -185,4 +205,23 @@
     .about-section {
         padding: 1.5rem;
     }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.about-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.about-section:nth-child(3) {
+    animation-delay: 0.4s;
 } 
