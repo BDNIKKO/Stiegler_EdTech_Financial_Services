@@ -76,10 +76,32 @@
     border-radius: 30px;
     padding: 2rem;
     box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.1),
-        inset 0 0 80px rgba(0, 0, 0, 0.05);
+        0 8px 32px rgba(255, 255, 255, 0.1),
+        0 4px 16px rgba(255, 255, 255, 0.05),
+        0 0 8px rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Update the dark overlay to be slightly more opaque */
+.about-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(28, 28, 28, 0.6);
+    border-radius: 30px;
+    z-index: 0;
+}
+
+/* Ensure content stays above the overlay */
+.about-header, .about-sections {
+    position: relative;
+    z-index: 1;
 }
 
 .about-header {
@@ -91,6 +113,7 @@
     font-size: 2.5rem;
     background: linear-gradient(45deg, #ffffff, #a0a0a0);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0;
 }
