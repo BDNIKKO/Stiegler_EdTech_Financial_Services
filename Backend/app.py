@@ -11,6 +11,8 @@ import jwt
 import datetime
 from functools import wraps
 import logging
+import requests
+import base64
 
 # Initialize Flask app and enable CORS
 app = Flask(__name__)
@@ -282,3 +284,95 @@ def get_loan_analytics(current_user):
     except Exception as e:
         logging.error(f"Error in get_loan_analytics: {str(e)}")
         return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/test-freshdesk', methods=['GET'])
+@token_required
+def test_freshdesk(current_user):
+    try:
+        # Use the hardcoded credentials
+        freshdesk_api_key = 'BKLJtkXkZ2dA8W4gaW'
+        freshdesk_domain = 'stiegler.freshdesk.com'
+        
+        # Create base64 encoded auth string
+        auth_str = base64.b64encode(f"{freshdesk_api_key}:X".encode()).decode()
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Basic {auth_str}'
+        }
+        
+        test_url = f'https://{freshdesk_domain}/api/v2/tickets'
+        
+        response = requests.get(test_url, headers=headers)
+        
+        logging.info(f"Freshdesk test response status: {response.status_code}")
+        logging.info(f"Freshdesk test response: {response.text[:200]}")  # Log first 200 chars
+        
+        return jsonify({
+            'status': 'success',
+            'freshdesk_status': response.status_code,
+            'container_status': {
+                'db_connected': db.session.is_active,
+                'freshdesk_connected': response.ok
+            },
+            'domain': freshdesk_domain
+        }), 200
+        
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Freshdesk connection error: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'container_status': {
+                'db_connected': db.session.is_active,
+                'freshdesk_connected': False
+            }
+        }), 500
+
+@app.route('/api/create-ticket', methods=['POST'])
+@token_required
+def create_ticket(current_user):
+    try:
+        data = request.get_json()
+        freshdesk_api_key = 'BKLJtkXkZ2dA8W4gaW'
+        freshdesk_domain = 'stiegler.freshdesk.com'
+        
+        auth_str = base64.b64encode(f"{freshdesk_api_key}:X".encode()).decode()
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Basic {auth_str}'
+        }
+        
+        ticket_data = {
+            'subject': data.get('subject'),
+            'description': data.get('description'),
+            'email': current_user.email or data.get('email'),
+            'priority': 1,
+            'status': 2
+        }
+        
+        response = requests.post(
+            f'https://{freshdesk_domain}/api/v2/tickets',
+            headers=headers,
+            json=ticket_data
+        )
+        
+        if response.status_code == 201:
+            return jsonify({
+                'status': 'success',
+                'message': 'Ticket created successfully',
+                'ticket': response.json()
+            }), 201
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to create ticket: {response.text}'
+            }), response.status_code
+            
+    except Exception as e:
+        logging.error(f"Error creating ticket: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
