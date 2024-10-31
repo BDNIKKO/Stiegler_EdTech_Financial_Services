@@ -202,15 +202,17 @@ def predict(current_user):
         loan_to_income = (loan_amount / income) * 100
         credit_history = min(employment_length / 10, 1.0)  # Scales from 0 to 1 over 10 years
 
+        # Initialize approved as False
+        approved = False
+        
         # First check if it's a "definitely approve" case
-        if (debt_to_income <= 15 and        # Very low DTI
-            income >= 50000 and             # Strong income
-            employment_length >= 5 and       # Established employment
-            loan_amount <= income * 0.25):   # Conservative loan amount
+        if (debt_to_income <= 15 and
+            income >= 50000 and
+            employment_length >= 5 and
+            loan_amount <= income * 0.25):
             approved = True
-            
         else:
-            # Otherwise use MLM and standard criteria
+            # MLM and standard criteria check
             features_array = [
                 income, loan_amount, loan_term,
                 employment_length, debt_to_income,
@@ -218,19 +220,19 @@ def predict(current_user):
             ]
             features_array = np.array(features_array).reshape(1, -1)
             
-            # Make prediction using the model
             with np.errstate(all='ignore'):
                 features_scaled = scaler.transform(features_array)
                 prediction = model.predict(features_scaled)
                 probability = float(model.predict_proba(features_scaled)[0][1])
                 
-            # Apply business rules for final decision
-            approved = bool(prediction[0] == 1 and
-                          debt_to_income <= 40 and 
-                          income >= 20000 and 
-                          loan_amount <= income * 5)
+            # Second approval check
+            if (prediction[0] == 1 and
+                debt_to_income <= 40 and 
+                income >= 20000 and 
+                loan_amount <= income * 5):
+                approved = True
 
-        # Store loan application
+        # Now 'approved' will be consistent for both storage and response
         loan_entry = Loan(
             user_id=current_user.id,
             income=float(income),
@@ -247,7 +249,6 @@ def predict(current_user):
         db.session.add(loan_entry)
         db.session.commit()
 
-        # Return prediction result
         return jsonify({
             'approved': approved,
             'message': 'Loan approved!' if approved else 'Loan denied.',
@@ -431,4 +432,36 @@ def get_loan_applications_list(current_user):
 
     except Exception as e:
         logging.error(f"Error in get_loan_applications_list: {str(e)}")
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@app.route('/api/user/loans', methods=['GET'])
+@token_required
+def get_user_loans(current_user):
+    try:
+        # Get user's most recent loan application
+        recent_loan = Loan.query.filter_by(user_id=current_user.id)\
+            .order_by(Loan.timestamp.desc())\
+            .first()
+        
+        # Get user's loan statistics
+        user_loans = Loan.query.filter_by(user_id=current_user.id).all()
+        total_applications = len(user_loans)
+        total_amount = sum(loan.loan_amount for loan in user_loans)
+        
+        return jsonify({
+            'firstName': current_user.first_name,
+            'recentLoan': {
+                'loan_amount': float(recent_loan.loan_amount),
+                'loan_term': recent_loan.loan_term,
+                'decision': recent_loan.decision,
+                'timestamp': recent_loan.timestamp.isoformat()
+            } if recent_loan else None,
+            'stats': {
+                'totalApplications': total_applications,
+                'totalAmount': float(total_amount)
+            }
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Error in get_user_loans: {str(e)}")
         return jsonify({'message': f'Error: {str(e)}'}), 500
